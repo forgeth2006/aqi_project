@@ -1,0 +1,7 @@
+AQI_Bucket,Days,Percent,Cumulative %
+Good,277,14.37,14.37
+Satisfactory,420,21.78,36.15
+Moderate,417,21.63,57.78
+Poor,353,18.31,76.09
+Very Poor,414,21.47,97.56
+Severe,47,2.44,100.0

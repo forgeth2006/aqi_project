@@ -1,0 +1,276 @@
+
+======================================================================
+1. DATA WRANGLING
+======================================================================
+Raw file shape: (2023, 11)
+Rows for Delhi: 2023
+Duplicate dates removed: 15
+
+Missing values before cleaning:
+Date      0
+PM2.5    80
+PM10     80
+NO2      80
+SO2      80
+CO       80
+O3       80
+AQI      80
+
+Extreme outlier values capped (3*IQR rule): 7
+Clean dataset: 1928 rows, 2015-01-01 to 2020-06-30
+
+======================================================================
+2. EXPLORATORY DATA ANALYSIS
+======================================================================
+Frequency table of AQI categories:
+              Days  Percent  Cumulative %
+AQI_Bucket                               
+Good           277    14.37         14.37
+Satisfactory   420    21.78         36.15
+Moderate       417    21.63         57.78
+Poor           353    18.31         76.09
+Very Poor      414    21.47         97.56
+Severe          47     2.44        100.00
+
+Descriptive statistics:
+                      PM2.5        AQI
+Mean                 88.416    181.799
+Median               76.060    155.555
+Mode                 24.000     15.000
+Std Dev              61.037    120.666
+Variance           3725.541  14560.313
+Min                   9.200     15.000
+Max                 386.162    500.000
+Skewness              1.172      0.326
+Kurtosis (excess)     1.894     -1.238
+  -> PM2.5: right-skewed (skew=1.17), heavy-tailed (leptokurtic) (kurtosis=1.89)
+  -> AQI: roughly symmetric (skew=0.33), light-tailed (platykurtic) (kurtosis=-1.24)
+
+Pearson correlation PM2.5 vs AQI: r = 0.908 (p = 0.00e+00)
+Correlation of every pollutant with AQI:
+PM2.5    0.908
+PM10     0.901
+CO       0.842
+NO2      0.598
+SO2      0.450
+O3      -0.460
+
+======================================================================
+3. POINT AND INTERVAL ESTIMATION
+======================================================================
+Point estimate of mean AQI : 181.80
+Standard error             : 2.748
+95% confidence interval    : (176.41, 187.19)
+Proportion of days AQI > 200: 0.422, 95% CI (0.400, 0.444)
+
+======================================================================
+4. SIMPLE LINEAR REGRESSION (AQI ~ PM2.5)
+======================================================================
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                    AQI   R-squared:                       0.825
+Model:                            OLS   Adj. R-squared:                  0.825
+Method:                 Least Squares   F-statistic:                     9100.
+Date:                Mon, 12 Oct 2026   Prob (F-statistic):               0.00
+Time:                        15:11:17   Log-Likelihood:                -10294.
+No. Observations:                1928   AIC:                         2.059e+04
+Df Residuals:                    1926   BIC:                         2.060e+04
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+Intercept     23.0057      2.023     11.375      0.000      19.039      26.972
+Q('PM2.5')     1.7960      0.019     95.395      0.000       1.759       1.833
+==============================================================================
+Omnibus:                      672.956   Durbin-Watson:                   1.776
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):             8288.202
+Skew:                          -1.281   Prob(JB):                         0.00
+Kurtosis:                      12.829   Cond. No.                         189.
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+R-squared = 0.825; slope p-value = 0.00e+00
+95% CI for coefficients:
+                 0       1
+Intercept   19.039  26.972
+Q('PM2.5')   1.759   1.833
+
+======================================================================
+5. MULTIPLE AND POLYNOMIAL REGRESSION
+======================================================================
+Model comparison (fit on 80% train, RMSE on 20% test):
+                       Model    R2  Adj R2       AIC  Test RMSE
+              Linear (PM2.5) 0.826   0.826 16467.821     50.597
+Polynomial (PM2.5 + PM2.5^2) 0.895   0.894 15698.076     37.185
+   Multiple (all pollutants) 0.854   0.854 16206.230     46.827
+   Multiple + Season dummies 0.865   0.864 16090.828     45.638
+Best regression model by test RMSE: Polynomial (PM2.5 + PM2.5^2)
+
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                    AQI   R-squared:                       0.865
+Model:                            OLS   Adj. R-squared:                  0.864
+Method:                 Least Squares   F-statistic:                     1093.
+Date:                Mon, 12 Oct 2026   Prob (F-statistic):               0.00
+Time:                        15:11:18   Log-Likelihood:                -8035.4
+No. Observations:                1542   AIC:                         1.609e+04
+Df Residuals:                    1532   BIC:                         1.614e+04
+Df Model:                           9                                         
+Covariance Type:            nonrobust                                         
+============================================================================================
+                               coef    std err          t      P>|t|      [0.025      0.975]
+--------------------------------------------------------------------------------------------
+Intercept                   24.0139      8.751      2.744      0.006       6.849      41.178
+C(Season)[T.PostMonsoon]    39.3493      5.103      7.712      0.000      29.341      49.358
+C(Season)[T.Summer]          2.1020      3.041      0.691      0.489      -3.862       8.066
+C(Season)[T.Winter]         40.6709      4.202      9.678      0.000      32.428      48.914
+Q('PM2.5')                   0.7827      0.059     13.183      0.000       0.666       0.899
+Q('PM10')                    0.3162      0.031     10.059      0.000       0.255       0.378
+NO2                          0.0677      0.143      0.472      0.637      -0.213       0.349
+SO2                         -0.1437      0.373     -0.385      0.700      -0.875       0.588
+CO                          17.4234      3.052      5.708      0.000      11.436      23.410
+O3                          -0.3762      0.100     -3.759      0.000      -0.572      -0.180
+==============================================================================
+Omnibus:                       50.222   Durbin-Watson:                   2.016
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              112.953
+Skew:                          -0.154   Prob(JB):                     2.97e-25
+Kurtosis:                       4.290   Cond. No.                     1.84e+03
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.84e+03. This might indicate that there are
+strong multicollinearity or other numerical problems.
+
+Multicollinearity check (VIF > 5 suggests a problem, > 10 is severe):
+Variable  VIF
+   PM2.5 9.72
+    PM10 9.77
+     NO2 1.72
+     SO2 1.33
+      CO 4.51
+      O3 1.25
+
+Breusch-Pagan test: LM = 241.68, p = 0.0000 -> heteroscedasticity present
+Durbin-Watson statistic: 2.016 (about 2 = no autocorrelation)
+Influential observations (Cook's D > 4/n): 86 of 1542
+
+Interpretation of key coefficients (multiple regression):
+  A 1-unit rise in PM2.5 changes AQI by +0.783 (p = 1.14e-37), other variables held constant
+  A 1-unit rise in PM10 changes AQI by +0.316 (p = 4.3e-23), other variables held constant
+  A 1-unit rise in NO2 changes AQI by +0.068 (p = 0.637), other variables held constant
+  A 1-unit rise in SO2 changes AQI by -0.144 (p = 0.7), other variables held constant
+  A 1-unit rise in CO changes AQI by +17.423 (p = 1.37e-08), other variables held constant
+  A 1-unit rise in O3 changes AQI by -0.376 (p = 0.000177), other variables held constant
+
+======================================================================
+6. LOGISTIC REGRESSION (Unhealthy day: AQI > 200)
+======================================================================
+Unhealthy days: 814 of 1928 (42.2%)
+                           Logit Regression Results                           
+==============================================================================
+Dep. Variable:              Unhealthy   No. Observations:                 1542
+Model:                          Logit   Df Residuals:                     1536
+Method:                           MLE   Df Model:                            5
+Date:                Mon, 12 Oct 2026   Pseudo R-squ.:                  0.8354
+Time:                        15:11:19   Log-Likelihood:                -172.88
+converged:                       True   LL-Null:                       -1050.1
+Covariance Type:            nonrobust   LLR p-value:                     0.000
+==============================================================================
+                 coef    std err          z      P>|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+const         -0.4246      0.147     -2.887      0.004      -0.713      -0.136
+PM2.5          8.9240      0.747     11.950      0.000       7.460      10.388
+NO2           -0.0381      0.182     -0.209      0.834      -0.395       0.318
+SO2           -0.2857      0.163     -1.756      0.079      -0.605       0.033
+CO             0.8724      0.299      2.916      0.004       0.286       1.459
+O3            -0.0955      0.148     -0.647      0.518      -0.385       0.194
+==============================================================================
+
+Possibly complete quasi-separation: A fraction 0.36 of observations can be
+perfectly predicted. This might indicate that there is complete
+quasi-separation. In this case some parameters will not be identified.
+
+Odds ratios and Wald test p-values:
+       Odds ratio (per 1 SD)  p-value (Wald z-test)
+const                 0.6541                 0.0039
+PM2.5              7509.7672                 0.0000
+NO2                   0.9626                 0.8342
+SO2                   0.7515                 0.0791
+CO                    2.3927                 0.0035
+O3                    0.9089                 0.5179
+
+Hosmer-Lemeshow test: chi2 = 0.994, p = 0.998 -> model fits adequately (p > 0.05)
+
+Classification table (rows = actual, columns = predicted):
+                  Pred Healthy  Pred Unhealthy
+Actual Healthy             215               8
+Actual Unhealthy            10             153
+Accuracy = 0.953, AUC = 0.992, Gini coefficient = 2*AUC - 1 = 0.985
+              precision    recall  f1-score   support
+
+     Healthy       0.96      0.96      0.96       223
+   Unhealthy       0.95      0.94      0.94       163
+
+    accuracy                           0.95       386
+   macro avg       0.95      0.95      0.95       386
+weighted avg       0.95      0.95      0.95       386
+
+
+======================================================================
+7. DECISION TREE - CART (Good / Moderate / Poor)
+======================================================================
+CART accuracy on test data: 0.845
+Confusion matrix (rows = actual, cols = predicted; order ['Good', 'Moderate', 'Poor']):
+          Good  Moderate  Poor
+Good       127        13     0
+Moderate    28        49     6
+Poor         0        13   150
+Feature importance (Gini based):
+PM2.5    0.965
+PM10     0.012
+CO       0.009
+SO2      0.005
+NO2      0.005
+Month    0.003
+O3       0.000
+
+Logistic vs CART:
+  Logistic regression (Unhealthy vs not) accuracy = 0.953
+  CART (3-class) accuracy                         = 0.845
+
+======================================================================
+8. TIME SERIES ANALYSIS AND FORECASTING
+======================================================================
+Monthly series: 66 months (Jan 2015 to Jun 2020)
+ADF stationarity test p-value = 0.0000 -> stationary
+Best ARIMA order by AIC: (2, 0, 2)  (AIC = 516.6)
+
+Forecast accuracy on last 6 months (lower is better):
+                 Method   RMSE  MAPE %
+     Moving average (3) 147.91  157.66
+  Simple exp. smoothing 171.36  181.67
+Holt-Winters (seasonal)   7.29    5.84
+         ARIMA(2, 0, 2)  26.70   17.94
+Most accurate method: Holt-Winters (seasonal)
+
+Forecast for the next 6 months:
+            ARIMA forecast  ARIMA lower 95%  ARIMA upper 95%  Holt-Winters forecast
+2020-07-01            60.3             35.6             84.9                   62.1
+2020-08-01           107.6             82.9            132.3                   94.6
+2020-09-01           175.5            150.7            200.3                  173.1
+2020-10-01           245.6            220.6            270.5                  246.4
+2020-11-01           299.0            273.8            324.2                  305.8
+2020-12-01           321.4            296.2            346.7                  311.0
+
+======================================================================
+9. CONCLUSIONS
+======================================================================
+1. PM2.5 has the strongest correlation with AQI (r = 0.91).
+2. Simple regression on PM2.5 alone explains 82.5% of AQI variation; best regression model (test RMSE) is: Polynomial (PM2.5 + PM2.5^2).
+3. Average AQI by season: Winter 300.5, PostMonsoon 246.7, Monsoon 108.9, Summer 108.3.
+4. Mean AQI is 181.8 with 95% CI (176.4, 187.2); 42.2% of days exceed AQI 200.
+5. Logistic regression accuracy 0.95 (Gini 0.98); CART accuracy 0.84.
+6. Best forecasting method on hold-out data: Holt-Winters (seasonal).

@@ -1,0 +1,5 @@
+Model,R2,Adj R2,AIC,Test RMSE
+Linear (PM2.5),0.826,0.826,16467.821,50.597
+Polynomial (PM2.5 + PM2.5^2),0.895,0.894,15698.076,37.185
+Multiple (all pollutants),0.854,0.854,16206.23,46.827
+Multiple + Season dummies,0.865,0.864,16090.828,45.638

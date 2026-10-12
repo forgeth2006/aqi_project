@@ -1,0 +1,5 @@
+Method,RMSE,MAPE %
+Moving average (3),147.91,157.66
+Simple exp. smoothing,171.36,181.67
+Holt-Winters (seasonal),7.29,5.84
+"ARIMA(2, 0, 2)",26.7,17.94
